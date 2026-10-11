@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Studienverlaufsplan Planer</title>
+<style>
+:root{--bg:#e7ebf5;--panel:#f6f1e1;--ink:#1b2430;--mute:#5a6578;--bar:#0b4a8f;--line:#c5cce0;--warn:#c4361f;--ok:#2f7d3a;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#161b26;--panel:#262b38;--ink:#e8ecf4;--mute:#9aa4b8;--line:#394156;--warn:#ff7a62;--ok:#7ccf86}}
+:root[data-theme="dark"]{--bg:#161b26;--panel:#262b38;--ink:#e8ecf4;--mute:#9aa4b8;--line:#394156;--warn:#ff7a62;--ok:#7ccf86}
+*,*:before,*:after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.35 system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:12px}
+h1{margin:0 0 8px;font-size:17px;background:var(--bar);color:#fff;padding:9px 12px;border-radius:6px}
+h1 b{font-weight:700}
+.top{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--panel);border-radius:6px;padding:8px 10px;margin-bottom:8px}
+.top .n{font-size:20px;font-weight:700}
+.top .l{color:var(--mute);font-size:12px}
+.top div.s{min-width:78px}
+.bar{flex:1 1 140px;height:10px;background:var(--line);border-radius:5px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ok);width:0}
+button{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 10px;cursor:pointer}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12px;color:var(--mute);margin:0 0 8px}
+.legend span:before{content:"";display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:4px;vertical-align:-1px;background:var(--c)}
+.scroll{overflow-x:auto;padding-bottom:6px}
+.grid{min-width:520px}
+.row{display:grid;grid-template-columns:30px 1fr 64px;gap:6px;margin-bottom:6px;position:relative}
+.lab{background:var(--panel);border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:700}
+.cells{display:flex;flex-wrap:wrap;gap:5px;min-height:70px;padding:5px;border-radius:6px;background:rgba(127,140,170,.12);border:2px dashed transparent;align-content:flex-start}
+.cells.over{border-color:var(--bar);background:rgba(11,74,143,.14)}
+.sum{background:var(--panel);border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;color:var(--mute);padding:2px}
+.sum b{font-size:16px;color:var(--ink)}
+.sum.hi b{color:var(--warn)}
+.sum button{padding:1px 6px;font-size:11px;margin-top:2px}
+.blk{width:92px;min-height:60px;padding:5px 15px 4px 6px;border-radius:6px;color:#1b2430;font-size:11px;line-height:1.2;position:relative;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;box-shadow:0 1px 0 rgba(0,0,0,.18)}
+.blk .cp{display:block;margin-top:3px;font-weight:700}
+.blk .ck{position:absolute;top:2px;right:2px;width:20px;height:20px;padding:0;border-radius:50%;background:rgba(255,255,255,.55);border:0;font-size:12px;line-height:20px;color:#1b2430}
+.blk .wn{display:block;color:#a01d0a;font-weight:700;margin-top:2px}
+.blk.dragging{opacity:.3}
+.ghost{position:fixed;z-index:99;pointer-events:none;opacity:.9;transform:rotate(2deg);box-shadow:0 6px 14px rgba(0,0,0,.35)}
+.row.hatch .cells{opacity:.55}
+.row.hatch:after{content:"";position:absolute;left:36px;right:70px;top:0;bottom:0;border-radius:6px;pointer-events:none;background:repeating-linear-gradient(45deg,rgba(110,120,140,.5) 0 5px,transparent 5px 11px)}
+.hint{color:var(--mute);font-size:12px;margin:2px 0 8px}
+.done{background:var(--panel);border-radius:6px;padding:8px 10px;margin-top:6px}
+.done h2{font-size:13px;margin:0 0 6px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{border:0;border-radius:12px;padding:3px 9px;font-size:11px;color:#1b2430;text-decoration:line-through}
+</style></head>
+<body><div class="wrap">
+<h1><b>Studienverlaufsplan</b> Wirtschaftsingenieurwesen – Maschinenbau (B.Sc.)</h1>
+<div class="top">
+ <div class="s"><div class="n" id="tDone">0</div><div class="l">CP erledigt</div></div>
+ <div class="s"><div class="n" id="tOpen">210</div><div class="l">CP offen</div></div>
+ <div class="s"><div class="n">210</div><div class="l">CP gesamt</div></div>
+ <div class="bar"><i id="pb"></i></div>
+ <button id="reset">Zurücksetzen</button>
+</div>
+<div class="legend" id="legend"></div>
+<p class="hint">Baustein gedrückt halten und in ein Semester ziehen. Zwischen zwei Bausteine gezogen, ändert sich die Reihenfolge. Mit ✓ ist ein Modul erledigt und verschwindet aus dem Plan. Mit „sperren“ wird ein Semester schraffiert, z. B. fürs Auslandssemester.</p>
+<div class="scroll"><div class="grid" id="grid"></div></div>
+<div class="done" id="doneBox" hidden><h2 id="doneH"></h2><div class="chips" id="chips"></div></div>
+</div>
+<script>
+var CAT={bwl:["BWL","#5ec4f2"],q:["Quantitativ","#e2d45a"],mb:["Maschinenbau","#8cc06f"],sk:["Schlüsselkompetenz / Praktikum","#f2a7c8"],sem:["Seminar","#8cc9b0"],ba:["Abschluss","#cfcfcf"]};
+var ROWS=9, KEY="sv-plan-v1";
+var BASE=[
+[1,"Operations Research",5,"bwl"],[1,"Wahlpflicht Chemie, Physik",5,"sk"],[1,"Mathematik 1 für Ingenieure",8,"q"],[1,"Technische Darstellung und CAD",5,"mb"],[1,"Technische Mechanik 1",7,"mb"],
+[2,"Finanzen und Rechnungswesen",10,"bwl"],[2,"Mathematik 2 für Ingenieure",7,"q"],[2,"Technische Mechanik 2",7,"mb"],[2,"CAD-Praktikum",1,"mb"],[2,"Technologie der Fertigungsverfahren",5,"mb"],
+[3,"Planung und Organisation",5,"bwl"],[3,"Mathematik M3",5,"q"],[3,"Statistik für Wirtschaftsingenieure",5,"q"],[3,"Strömungsmechanik 1",5,"mb"],[3,"Thermodynamik 1",5,"mb"],[3,"Werkstofftechnik 1",5,"mb"],
+[4,"Marketing und Innovation",5,"bwl"],[4,"Grundlagen des Personalmanagements",5,"bwl"],[4,"Schlüsselkompetenz wiss. Arbeiten",1,"sk"],[4,"Industriepflichtpraktikum",12,"sk"],[4,"Elektrotechnik",5,"mb"],[4,"Maschinenelemente 1",5,"mb"],
+[5,"Datenstrukturen und Algorithmen MB",5,"mb"],[5,"Grundlagen der Mess- und Automatisierungstechnik",6,"mb"],[5,"Regenerative Energiesysteme",5,"mb"],[5,"Wahlpflicht BWL (1 von 4)",5,"bwl"],[5,"Wahlpflicht BWL (2 von 4)",5,"bwl"],
+[6,"Wahlpflicht Maschinenbau A (1 von 2)",5,"mb"],[6,"Wahlpflicht Maschinenbau A (2 von 2)",5,"mb"],[6,"Wahlpflicht Maschinenbau B",5,"mb"],[6,"Produktentwurf",5,"mb"],[6,"E1 Schlüsselkompetenzen",2,"sk"],[6,"Wahlpflicht Seminar BWL",5,"sem"],[6,"Wahlpflicht BWL (3 von 4)",5,"bwl"],
+[7,"Mikroökonomik für interdisz. Studiengänge",5,"bwl"],[7,"Makroökonomik für interdisz. Studiengänge",5,"bwl"],[7,"Bachelorarbeit + Kolloquium",14,"ba"],[7,"Wahlpflicht BWL (4 von 4)",5,"bwl"]
+];
+var M=BASE.map(function(b,i){return{id:i,origin:b[0],row:b[0],name:b[1],cp:b[2],cat:b[3],done:false}});
+var locked={};
+function load(){try{var s=JSON.parse(localStorage.getItem(KEY)||"null");if(!s)return;M.forEach(function(m){if(s.r&&s.r[m.id])m.row=s.r[m.id];m.done=!!(s.d&&s.d.indexOf(m.id)>-1)});locked=s.l||{};if(s.o){var by={},nm=[];M.forEach(function(m){by[m.id]=m});s.o.forEach(function(id){if(by[id]){nm.push(by[id]);delete by[id]}});M.forEach(function(m){if(by[m.id])nm.push(m)});M=nm}}catch(e){}}
+function save(){try{var r={},d=[];M.forEach(function(m){r[m.id]=m.row;if(m.done)d.push(m.id)});localStorage.setItem(KEY,JSON.stringify({r:r,d:d,l:locked,o:M.map(function(m){return m.id})}))}catch(e){}}
+function hatched(n){if(locked[n])return true;var o=M.filter(function(m){return m.origin===n});return o.length>0&&o.every(function(m){return m.done})}
+function el(t,c,h){var e=document.createElement(t);if(c)e.className=c;if(h!=null)e.textContent=h;return e}
+function render(){
+ var g=document.getElementById("grid");g.innerHTML="";
+ var baRow=M.filter(function(m){return m.cat==="ba"})[0].row, earned=0;
+ M.forEach(function(m){if(m.cat!=="ba"&&(m.done||m.row<baRow))earned+=m.cp});
+ for(var n=1;n<=ROWS;n++){(function(n){
+  var row=el("div","row"+(hatched(n)?" hatch":"")),cells=el("div","cells");cells.dataset.row=n;
+  var s=0;
+  M.filter(function(m){return m.row===n&&!m.done}).forEach(function(m){
+   s+=m.cp;var b=el("div","blk");b.dataset.id=m.id;b.style.background=CAT[m.cat][1];
+   b.appendChild(document.createTextNode(m.name));b.appendChild(el("span","cp",m.cp+" CP"));
+   if(m.cat==="ba"&&earned<150)b.appendChild(el("span","wn","⚠ nur "+earned+" CP davor, nötig: 150"));
+   var ck=el("button","ck","✓");ck.title="Als erledigt markieren";ck.onclick=function(e){e.stopPropagation();m.done=true;save();render()};b.appendChild(ck);
+   b.addEventListener("pointerdown",function(e){down(e,m,b)});cells.appendChild(b)});
+  var sum=el("div","sum"+(s>33?" hi":""));sum.appendChild(el("b",null,String(s)));sum.appendChild(document.createTextNode("CP"));
+  var lk=el("button",null,locked[n]?"freigeben":"sperren");lk.onclick=function(){if(locked[n])delete locked[n];else locked[n]=1;save();render()};sum.appendChild(lk);
+  row.appendChild(el("div","lab",String(n)));row.appendChild(cells);row.appendChild(sum);g.appendChild(row)})(n)}
+ var d=M.filter(function(m){return m.done}),dc=d.reduce(function(a,m){return a+m.cp},0);
+ document.getElementById("tDone").textContent=dc;document.getElementById("tOpen").textContent=210-dc;
+ document.getElementById("pb").style.width=(dc/210*100)+"%";
+ var box=document.getElementById("doneBox"),ch=document.getElementById("chips");box.hidden=!d.length;ch.innerHTML="";
+ document.getElementById("doneH").textContent="Erledigt: "+d.length+" Module, "+dc+" CP (antippen, um zurückzuholen)";
+ d.forEach(function(m){var c=el("button","chip",m.name+" · "+m.cp);c.style.background=CAT[m.cat][1];c.onclick=function(){m.done=false;save();render()};ch.appendChild(c)})}
+var drag=null;
+function rowAt(x,y){var l=document.elementsFromPoint(x,y);for(var i=0;i<l.length;i++){var c=l[i].closest&&l[i].closest(".cells");if(c)return c}return null}
+function down(e,m,b){
+ if(e.target.closest(".ck")||(e.pointerType==="mouse"&&e.button!==0))return;
+ drag={m:m,b:b,x:e.clientX,y:e.clientY,on:false,gh:null,hl:null};
+ b.setPointerCapture(e.pointerId);
+ b.onpointermove=move;b.onpointerup=up;b.onpointercancel=up}
+function move(e){
+ if(!drag)return;
+ if(!drag.on){if(Math.abs(e.clientX-drag.x)+Math.abs(e.clientY-drag.y)<8)return;
+  drag.on=true;var r=drag.b.getBoundingClientRect();drag.dx=e.clientX-r.left;drag.dy=e.clientY-r.top;
+  drag.gh=drag.b.cloneNode(true);drag.gh.className="blk ghost";drag.gh.style.width=r.width+"px";document.body.appendChild(drag.gh);drag.b.classList.add("dragging")}
+ drag.gh.style.left=(e.clientX-drag.dx)+"px";drag.gh.style.top=(e.clientY-drag.dy)+"px";
+ var c=rowAt(e.clientX,e.clientY);
+ if(drag.hl&&drag.hl!==c)drag.hl.classList.remove("over");
+ if(c&&!hatched(+c.dataset.row)){c.classList.add("over");drag.hl=c}else drag.hl=null}
+function up(e){
+ if(!drag)return;var d=drag;drag=null;
+ if(d.gh)d.gh.remove();
+ if(d.on){var c=rowAt(e.clientX,e.clientY);if(c&&!hatched(+c.dataset.row)){var m=d.m,bl=[].slice.call(c.querySelectorAll(".blk:not(.dragging)")),before=null;for(var i=0;i<bl.length;i++){var r=bl[i].getBoundingClientRect();if(e.clientY<r.bottom&&(e.clientY<r.top||e.clientX<r.left+r.width/2)){before=bl[i];break}}M.splice(M.indexOf(m),1);m.row=+c.dataset.row;if(before){var t=M.filter(function(x){return String(x.id)===before.dataset.id})[0];M.splice(M.indexOf(t),0,m)}else M.push(m);save()}render()}}
+var rb=document.getElementById("reset"),rt=null;rb.onclick=function(){if(!rt){rb.textContent="Wirklich zurücksetzen?";rt=setTimeout(function(){rb.textContent="Zurücksetzen";rt=null},3500);return}clearTimeout(rt);rt=null;rb.textContent="Zurücksetzen";M.sort(function(a,b){return a.id-b.id});M.forEach(function(m){m.row=m.origin;m.done=false});locked={};save();render()};
+var lg=document.getElementById("legend");Object.keys(CAT).forEach(function(k){var s=el("span",null,CAT[k][0]);s.style.setProperty("--c",CAT[k][1]);lg.appendChild(s)});
+load();render();
+</script></body></html>
